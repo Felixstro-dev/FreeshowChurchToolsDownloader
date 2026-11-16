@@ -1,7 +1,8 @@
 #!/bin/bash
 # FreeShow ChurchTools Patcher
-# Universal patcher that works on ANY FreeShow installation (Linux/macOS/Windows via WSL)
-# Run: curl -fsSL https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/freeshow-churchtools-patcher.sh | bash
+# Universal patcher that adds ChurchTools integration to ANY FreeShow installation
+# Run: curl -fsSL https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/patch-freeshow.sh | bash
+# Or: ./freeshow-churchtools-patcher.sh [--path /path/to/freeshow] [--force] [--dry-run]
 
 set -e
 
@@ -27,7 +28,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 print_step "FreeShow ChurchTools Patcher"
-echo "This will patch your FreeShow installation with ChurchTools integration."
+echo "This patches your existing FreeShow installation with ChurchTools integration."
 echo ""
 
 # Find FreeShow installation
@@ -52,11 +53,6 @@ find_freeshow() {
                 "/var/lib/flatpak/app/com.freeshow.FreeShow/current/active/files/resources"
                 "/snap/freeshow/current/resources"
             )
-            # Check for AppImage
-            if [[ -f "$HOME/.local/bin/FreeShow.AppImage" ]]; then
-                echo "appimage:$HOME/.local/bin/FreeShow.AppImage"
-                return 0
-            fi
             ;;
     esac
     
@@ -65,7 +61,6 @@ find_freeshow() {
     fi
     
     for path in "${paths[@]}"; do
-        # Handle AppImage
         if [[ -f "$path" && "$path" == *.AppImage ]]; then
             echo "appimage:$path"
             return 0
@@ -104,7 +99,7 @@ if [[ "$RESOURCES_RESULT" == appimage:* ]]; then
     APPIMAGE_PATH="${RESOURCES_RESULT#appimage:}"
     print_warning "AppImage detected: $APPIMAGE_PATH"
     print_warning "AppImage patching requires extraction and repackaging."
-    print_warning "For AppImage, it's recommended to download the pre-patched version from releases."
+    print_warning "For AppImage, download the pre-patched version from releases."
     print_warning "Or run: curl -fsSL https://github.com/Felixstro-dev/FreeshowChurchToolsDownloader/releases/latest/download/FreeShow-1.6.8-beta.4-x86_64.AppImage -o FreeShow.AppImage"
     exit 1
 fi

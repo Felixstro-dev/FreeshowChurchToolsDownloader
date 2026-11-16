@@ -4,6 +4,7 @@
 .DESCRIPTION
     Universal patcher that adds ChurchTools integration to ANY FreeShow installation.
     Run: Set-ExecutionPolicy Bypass -Scope Process -Force; iwr https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/freeshow-churchtools-patcher.ps1 -UseBasicParsing | iex
+    Or: .\freeshow-churchtools-patcher.ps1 [-FreeShowPath "C:\Path\To\FreeShow"] [-Force] [-DryRun]
 .NOTES
     Run as Administrator for Program Files installations.
 #>
@@ -22,6 +23,8 @@ function Write-Warning { param($msg) Write-Host "! $msg" -ForegroundColor Yellow
 function Write-ErrorMsg { param($msg) Write-Host "✗ $msg" -ForegroundColor Red }
 
 Write-Step "FreeShow ChurchTools Patcher for Windows"
+Write-Host "This patches your existing FreeShow installation with ChurchTools integration."
+Write-Host ""
 
 # Find FreeShow
 $possiblePaths = @(
@@ -65,7 +68,7 @@ npx asar extract $appAsar $tempDir
 Write-Success "Extracted"
 
 # Patch
-Write-Step "Patching..."
+Write-Step "Patching ChurchTools integration..."
 $churchToolsDir = Join-Path $tempDir "electron" "contentProviders" "churchtools"
 New-Item -ItemType Directory -Force -Path $churchToolsDir | Out-Null
 
@@ -88,7 +91,15 @@ import type { ContentLibraryCategory, ContentFile } from "../base/types"
 
 export class ChurchToolsProvider extends ContentProvider<any, any> {
     constructor() {
-        super({ providerId: "churchtools", displayName: "ChurchTools", port: 5503, clientId: "", clientSecret: "", apiUrl: "", scopes: ["calendar", "services", "songs", "events", "persons", "files"] as const })
+        super({
+            providerId: "churchtools",
+            displayName: "ChurchTools",
+            port: 5503,
+            clientId: "",
+            clientSecret: "",
+            apiUrl: "",
+            scopes: ["calendar", "services", "songs", "events", "persons", "files"] as const,
+        })
     }
     isConnected(): boolean { return false }
     async connect(): Promise<any> { return null }
