@@ -3,6 +3,9 @@
     "version": "1.6.8-beta.4",
     "private": true,
     "main": "build/electron/index.js",
+    "bin": {
+        "freeshow-churchtools-patcher": "universal-patcher.js"
+    },
     "description": "Show song lyrics and more for free!",
     "repository": "git@github.com:ChurchApps/FreeShow.git",
     "author": "ChurchApps <support@livecs.org>",
@@ -18,6 +21,10 @@
     "scripts": {
         "postinstall": "electron-builder install-app-deps",
         "rebuild-opus": "electron-rebuild -f -o @discordjs/opus && node scripts/opus.js",
+        "---CHURCHTOOLS---": "",
+        "patch:churchtools": "node universal-patcher.js",
+        "patch:churchtools:dry": "node universal-patcher.js --dry-run",
+        "patch:churchtools:force": "node universal-patcher.js --force",
         "---DEVELOPMENT---": "",
         "start": "node scripts/start.js",
         "start:old": "npx cross-env NODE_ENV=development npm-run-all -p -r build:frontend:dev start:electron",
