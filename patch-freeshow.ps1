@@ -1,21 +1,16 @@
 <#
 .SYNOPSIS
-    FreeShow ChurchTools Integration Patcher for Windows
+    FreeShow ChurchTools Patcher for Windows
 .DESCRIPTION
-    Patches an existing FreeShow installation with ChurchTools OAuth 2.0 integration.
+    Patches existing FreeShow with ChurchTools integration.
     Run as Administrator for best results.
 .NOTES
-    Run from PowerShell: Set-ExecutionPolicy Bypass -Scope Process -Force; .\patch-freeshow.ps1
+    Run: Set-ExecutionPolicy Bypass -Scope Process -Force; .\patch-freeshow.ps1
 #>
 
 param(
-    [Parameter(Mandatory=$false)]
-    [string]$FreeShowPath = "C:\Program Files\FreeShow",
-
-    [Parameter(Mandatory=$false)]
-    [string]$GitHubRepo = "Felixstro-dev/FreeshowChurchToolsDownloader",
-
-    [Parameter(Mandatory=$false)]
+    [string]$FreeShowPath = "",
+    [string]$GitHubRepo = "",
     [switch]$Force
 )
 
@@ -26,119 +21,103 @@ function Write-Success { param($msg) Write-Host "✓ $msg" -ForegroundColor Gree
 function Write-Warning { param($msg) Write-Host "! $msg" -ForegroundColor Yellow }
 function Write-ErrorMsg { param($msg) Write-Host "✗ $msg" -ForegroundColor Red }
 
-# Check for admin rights
-$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-if (-not $isAdmin) {
-    Write-Warning "Running without Admin rights. Some operations may fail."
-    Write-Warning "Re-run PowerShell as Administrator for full access."
-}
-
-Write-Step "FreeShow ChurchTools Patcher for Windows"
-Write-Step "Target: $FreeShowPath"
-
-# Find FreeShow installation
-$possiblePaths = @(
-    "C:\Program Files\FreeShow",
-    "C:\Program Files (x86)\FreeShow",
-    "$env:LOCALAPPDATA\Programs\FreeShow",
-    "$env:APPDATA\FreeShow"
-)
-
-$foundPath = $null
-foreach ($path in $possiblePaths) {
-    if (Test-Path "$path\resources\app.asar") {
-        $foundPath = $path
-        break
+# Auto-detect repo
+if (-not $GitHubRepo) {
+    $remoteUrl = git config --get remote.origin.url 2>$null
+    if ($remoteUrl -match 'github\.com[:/]([^/]+/[^/]+)(\.git)?$') {
+        $GitHubRepo = $matches[1]
+    } else {
+        $GitHubRepo = "Felixstro-dev/FreeshowChurchToolsDownloader"
     }
 }
 
+Write-Step "FreeShow ChurchTools Patcher (repo: $GitHubRepo)"
+
+# Find FreeShow
+$possiblePaths = @(
+    "C:\Program Files\FreeShow\resources",
+    "C:\Program Files (x86)\FreeShow\resources",
+    "$env:LOCALAPPDATA\Programs\FreeShow\resources",
+    "$env:APPDATA\FreeShow\resources"
+)
+if ($FreeShowPath) { $possiblePaths = @($FreeShowPath) + $possiblePaths }
+
+$foundPath = $null
+foreach ($path in $possiblePaths) {
+    $asar = Join-Path $path "app.asar"
+    if (Test-Path $asar) { $foundPath = $path; break }
+}
+
 if (-not $foundPath) {
-    Write-ErrorMsg "FreeShow not found in standard locations."
-    Write-Warning "Try specifying path: -FreeShowPath 'C:\Custom\Path\FreeShow'"
+    Write-ErrorMsg "FreeShow not found. Use -FreeShowPath 'C:\Custom\Path\FreeShow'"
     exit 1
 }
+Write-Success "Found: $foundPath"
 
-Write-Success "Found FreeShow at: $foundPath"
-$resourcesPath = Join-Path $foundPath "resources"
-$appAsar = Join-Path $resourcesPath "app.asar"
-$appUnpacked = Join-Path $resourcesPath "app.asar.unpacked"
+$appAsar = Join-Path $foundPath "app.asar"
+if (-not (Test-Path $appAsar)) { Write-ErrorMsg "app.asar not found"; exit 1 }
 
-if (-not (Test-Path $appAsar)) {
-    Write-ErrorMsg "app.asar not found at $appAsar"
-    exit 1
-}
-
-# Backup original
+# Backup
 $backupPath = "$appAsar.backup.$(Get-Date -Format 'yyyyMMdd_HHmmss')"
 if (-not (Test-Path $backupPath) -or $Force) {
-    Write-Step "Creating backup..."
-    Copy-Item $appAsar $backupPath -Force
-    Write-Success "Backup created: $backupPath"
+    Write-Step "Backing up..."; Copy-Item $appAsar $backupPath -Force; Write-Success "Backup: $backupPath"
 }
 
-# Extract app.asar
-Write-Step "Extracting app.asar..."
+# Extract
 $tempDir = [System.IO.Path]::GetTempFileName()
 Remove-Item $tempDir -Force
 New-Item -ItemType Directory -Path $tempDir | Out-Null
 
-# Use npx asar extract (install if needed)
-try {
-    npx asar extract $appAsar $tempDir 2>$null
-} catch {
-    Write-Step "Installing @electron/asar..."
-    npm install -g @electron/asar 2>$null
-    npx asar extract $appAsar $tempDir
-}
-Write-Success "Extracted to $tempDir"
+Write-Step "Extracting..."
+npx asar extract $appAsar $tempDir
+Write-Success "Extracted"
 
-# Patch the files
-Write-Step "Patching ChurchTools integration..."
-
-# 1. Check if churchtools provider exists
+# Patch
+Write-Step "Patching..."
 $churchToolsDir = Join-Path $tempDir "electron" "contentProviders" "churchtools"
-if (-not (Test-Path $churchToolsDir)) {
-    Write-Step "Adding ChurchTools provider files..."
-    # We'll need to copy the churchtools source files
-    # For now, we'll download from GitHub
-}
+New-Item -ItemType Directory -Force -Path $churchToolsDir | Out-Null
 
-# 2. Update ContentProviderRegistry to register churchtools
 $registryFile = Join-Path $tempDir "electron" "contentProviders" "ContentProviderRegistry.ts"
 if (Test-Path $registryFile) {
     $content = Get-Content $registryFile -Raw
     if ($content -notmatch "churchtools") {
-        Write-Step "Registering ChurchTools provider..."
-        # Add import and registration
-        $importLine = "import { ChurchToolsProvider } from `"./churchtools/ChurchToolsProvider`";"
-        $registerLine = "ContentProviderFactory.register(`"churchtools`", ChurchToolsProvider);"
-        
-        if ($content -notmatch $importLine) {
-            $content = $content -replace "^(import .* from `"./ContentProviderFactory`";)", "$1`n$importLine"
-        }
-        if ($content -notmatch $registerLine) {
-            $content = $content -replace "(ContentProviderFactory\.register\(.*\);)", "`$1`n$registerLine"
-        }
+        $content = $content -replace '^(import .* from "\./ContentProviderFactory";)', '$1`nimport { ChurchToolsProvider } from "./churchtools/ChurchToolsProvider";'
+        $content = $content -replace '(ContentProviderFactory\.register\([^)]+\);)', '$1`nContentProviderFactory.register("churchtools", ChurchToolsProvider);'
         Set-Content $registryFile $content -Encoding UTF8
-        Write-Success "Updated ContentProviderRegistry"
+        Write-Success "Updated registry"
     }
 }
 
-# 3. Rebuild app.asar
+# Minimal ChurchToolsProvider
+$providerFile = Join-Path $churchToolsDir "ChurchToolsProvider.ts"
+Set-Content $providerFile @'
+import { ContentProvider } from "../base/ContentProvider"
+import type { ContentLibraryCategory, ContentFile } from "../base/types"
+
+export class ChurchToolsProvider extends ContentProvider<any, any> {
+    constructor() {
+        super({ providerId: "churchtools", displayName: "ChurchTools", port: 5503, clientId: "", clientSecret: "", apiUrl: "", scopes: ["calendar", "services", "songs", "events", "persons", "files"] as const })
+    }
+    isConnected(): boolean { return false }
+    async connect(): Promise<any> { return null }
+    disconnect(): void {}
+    async apiRequest(data: any): Promise<any> { throw new Error("Build from source for full features") }
+    async loadServices(): Promise<void> {}
+    async startupLoad(): Promise<void> {}
+    async getContentLibrary(): Promise<any[]> { return [] }
+    async getContent(key: string): Promise<any[]> { return [] }
+    protected handleAuthCallback(req: any, res: any): void {}
+    protected async refreshToken(): Promise<any> { return null }
+    protected async authenticate(): Promise<any> { return null }
+}
+'@
+
+# Rebuild
 Write-Step "Rebuilding app.asar..."
 npx asar pack $tempDir $appAsar
-Write-Success "app.asar rebuilt"
+Write-Success "Done!"
 
-# Cleanup
-Remove-Item $tempDir -Recurse -Force
-
-Write-Success "Patching complete!"
 Write-Host ""
-Write-Host "Next steps:" -ForegroundColor Cyan
-Write-Host "1. Restart FreeShow"
-Write-Host "2. Go to Settings > ChurchTools tab"
-Write-Host "3. Enter your ChurchTools credentials"
-Write-Host "4. Test Connection > Connect"
-
-# Cleanup temp
-Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue
+Write-Host "Restart FreeShow → Settings → ChurchTools → Configure → Connect" -ForegroundColor Cyan
+Write-Warning "Minimal patch. For full features, build from source: git clone && npm ci && npm run release:local"
+'@

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Quick Install - Run on second PC
+# Quick Install - Run on any PC
 # Usage: curl -fsSL https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/quick-install.sh | bash
 
 set -e
