@@ -5,12 +5,12 @@
     Downloads and installs FreeShow with ChurchTools integration.
     Creates desktop shortcut and start menu entry.
 .NOTES
-    Run: Set-ExecutionPolicy Bypass -Scope Process -Force; iwr https://raw.githubusercontent.com/YOUR_USERNAME/freeshow-churchtools/main/quick-install.ps1 -UseBasicParsing | iex
+    Run: Set-ExecutionPolicy Bypass -Scope Process -Force; iwr https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/quick-install.ps1 -UseBasicParsing | iex
 #>
 
 $ErrorActionPreference = "Stop"
 
-$GITHUB_REPO = "YOUR_USERNAME/freeshow-churchtools"
+$GITHUB_REPO = "Felixstro-dev/FreeshowChurchToolsDownloader"
 $APPIMAGE_NAME = "FreeShow-1.6.8-beta.4-win.exe"
 $INSTALL_DIR = "$env:PROGRAMFILES\FreeShow"
 $DESKTOP_DIR = [Environment]::GetFolderPath("Desktop")

@@ -13,7 +13,7 @@ const https = require('https');
 const { EventEmitter } = require('events');
 
 const CONFIG = {
-    githubRepo: 'YOUR_USERNAME/freeshow-churchtools',
+    githubRepo: 'Felixstro-dev/FreeshowChurchToolsDownloader',
     currentVersion: '1.6.8-churchtools.1',
     settingsPaths: {
         linux: [
@@ -385,7 +385,7 @@ Options:
   --backup-only      Only backup settings and app.asar
   --force            Force update even if same version
   --rollback         Rollback to previous backup
-  --repo <user/repo> Custom GitHub repo (default: YOUR_USERNAME/freeshow-churchtools)
+  --repo <user/repo> Custom GitHub repo (default: Felixstro-dev/FreeshowChurchToolsDownloader)
   --path <path>      Custom FreeShow installation path
   --help             Show this help
 

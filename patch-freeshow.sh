@@ -1,12 +1,12 @@
 #!/bin/bash
 # FreeShow ChurchTools Integration Patcher for macOS & Linux
-# Usage: curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/freeshow-churchtools/main/patch-freeshow.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/patch-freeshow.sh | bash
 # Or: ./patch-freeshow.sh [--path /path/to/freeshow] [--force]
 
 set -e
 
 # Configuration
-GITHUB_REPO="YOUR_USERNAME/freeshow-churchtools"
+GITHUB_REPO="Felixstro-dev/FreeshowChurchToolsDownloader"
 FORCE=false
 FREESHOW_PATH=""
 
@@ -223,5 +223,5 @@ print_warning "Note: This is a minimal patch. For full ChurchTools integration,"
 print_warning "you need the complete churchtools provider from the source repo."
 echo ""
 echo "For full integration, build from source:"
-echo "  git clone https://github.com/YOUR_USERNAME/freeshow-churchtools.git"
+echo "  git clone https://github.com/Felixstro-dev/FreeshowChurchToolsDownloader.git"
 echo "  cd freeshow-churchtools && npm ci && npm run release:local"

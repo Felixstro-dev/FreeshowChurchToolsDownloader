@@ -1,10 +1,10 @@
 #!/bin/bash
 # Quick Install - Run on second PC
-# Usage: curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/freeshow-churchtools/main/quick-install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/quick-install.sh | bash
 
 set -e
 
-GITHUB_REPO="YOUR_USERNAME/freeshow-churchtools"
+GITHUB_REPO="Felixstro-dev/FreeshowChurchToolsDownloader"
 INSTALL_DIR="$HOME/.local/bin"
 DESKTOP_DIR="$HOME/.local/share/applications"
 ICON_DIR="$HOME/.local/share/icons/hicolor/512x512/apps"

@@ -13,7 +13,7 @@ param(
     [string]$FreeShowPath = "C:\Program Files\FreeShow",
 
     [Parameter(Mandatory=$false)]
-    [string]$GitHubRepo = "YOUR_USERNAME/freeshow-churchtools",
+    [string]$GitHubRepo = "Felixstro-dev/FreeshowChurchToolsDownloader",
 
     [Parameter(Mandatory=$false)]
     [switch]$Force

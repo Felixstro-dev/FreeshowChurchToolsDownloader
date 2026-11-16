@@ -21,7 +21,7 @@ git add .
 git commit -m "FreeShow with ChurchTools OAuth 2.0 integration"
 
 # Add remote (replace YOUR_USERNAME)
-git remote add origin https://github.com/YOUR_USERNAME/freeshow-churchtools.git
+git remote add origin https://github.com/Felixstro-dev/FreeshowChurchToolsDownloader.git
 git branch -M main
 git push -u origin main
 ```
@@ -46,7 +46,7 @@ This triggers the GitHub Actions workflow which:
 ### 4. Update Installer Script
 Edit `install-freeshow.sh` and replace:
 ```bash
-GITHUB_REPO="YOUR_USERNAME/freeshow-churchtools"
+GITHUB_REPO="Felixstro-dev/FreeshowChurchToolsDownloader"
 ```
 with your actual GitHub username.
 
@@ -57,7 +57,7 @@ chmod +x install-freeshow.sh
 ./install-freeshow.sh
 
 # Or test the curl command (after pushing to GitHub)
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/freeshow-churchtools/main/install-freeshow.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/install-freeshow.sh | bash
 ```
 
 ## Repository Structure
@@ -85,7 +85,7 @@ freeshow-churchtools/
 ## After First Release
 Users can install with one command:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/freeshow-churchtools/main/install-freeshow.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/install-freeshow.sh | bash
 ```
 
 ## Next Steps

@@ -1,11 +1,11 @@
 #!/bin/bash
 # FreeShow Installer Script with ChurchTools Integration
-# Usage: curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/freeshow-churchtools/main/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/install.sh | bash
 
 set -e
 
 # ===== CONFIGURATION - UPDATE THESE =====
-GITHUB_REPO="YOUR_USERNAME/freeshow-churchtools"
+GITHUB_REPO="Felixstro-dev/FreeshowChurchToolsDownloader"
 APPIMAGE_NAME="FreeShow-1.6.8-beta.4-x86_64.AppImage"
 # ========================================
 

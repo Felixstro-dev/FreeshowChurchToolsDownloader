@@ -23,7 +23,7 @@ npx /home/felix/Dokumente/Programmieren/ChurchtoolsDownloader/FreeShow/universal
 #### Linux/macOS (Bash)
 ```bash
 # Quick install (downloads AppImage/dmg/exe)
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/freeshow-churchtools/main/quick-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/quick-install.sh | bash
 
 # Patch existing installation
 ./patch-freeshow.sh
@@ -101,7 +101,7 @@ cd /home/felix/Dokumente/Programmieren/ChurchtoolsDownloader/FreeShow
 git init
 git add .
 git commit -m "FreeShow with ChurchTools integration"
-git remote add origin https://github.com/YOUR_USERNAME/freeshow-churchtools.git
+git remote add origin https://github.com/Felixstro-dev/FreeshowChurchToolsDownloader.git
 git branch -M main
 git push -u origin main
 ```
@@ -120,7 +120,7 @@ git push origin v1.6.8-churchtools.1
 ### 5. Update Scripts
 Edit `install-freeshow.sh`, `quick-install.sh`, `patch-freeshow.sh`, `patch-freeshow.ps1`:
 ```bash
-GITHUB_REPO="YOUR_USERNAME/freeshow-churchtools"
+GITHUB_REPO="Felixstro-dev/FreeshowChurchToolsDownloader"
 ```
 
 ---
@@ -129,18 +129,18 @@ GITHUB_REPO="YOUR_USERNAME/freeshow-churchtools"
 
 ### Second PC - Linux (one-liner)
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/freeshow-churchtools/main/quick-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/quick-install.sh | bash
 ```
 
 ### Second PC - macOS (one-liner)
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/freeshow-churchtools/main/quick-install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/quick-install.sh | bash
 ```
 
 ### Second PC - Windows (PowerShell)
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force
-iwr https://raw.githubusercontent.com/YOUR_USERNAME/freeshow-churchtools/main/quick-install.ps1 -UseBasicParsing | iex
+iwr https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/quick-install.ps1 -UseBasicParsing | iex
 ```
 
 ### Patch Existing Installation

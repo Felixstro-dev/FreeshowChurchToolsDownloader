@@ -1,79 +1,234 @@
-<p align='center'>
- <a href='https://freeshow.app/'>
-  <img src='https://github.com/ChurchApps/FreeShow/assets/17619496/02ac9807-1f47-47fc-b895-b35f857c2b57' width=150 />
- </a>
-</p>
+# FreeShow ChurchTools Integration
 
-<h1 align='center'>
-  FreeShow
-</h1>
+Complete ChurchTools OAuth 2.0 integration for FreeShow with full feature set including event import, smart song matching, Bible verse detection, service team slides, and automatic attachment handling.
 
-<p align='center'>
-  FreeShow is a free software with a user-friendly interface that offers powerful features for creating and editing slideshows. 
-</p>
+## 🚀 Quick Install
 
-<p align='center'>
-  <a href="https://github.com/ChurchApps/freeshow/releases"><img alt="Download" src="https://img.shields.io/github/downloads/ChurchApps/FreeShow/total?style=for-the-badge" /></a>
-  &nbsp;
-  <a href="https://github.com/ChurchApps/freeshow/blob/main/LICENSE"><img alt="Licence" src="https://img.shields.io/badge/licence-GPL-blue.svg?style=for-the-badge" /></a>
-  &nbsp;
-  <a href="https://github.com/ChurchApps/FreeShow/"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/ChurchApps/FreeShow?style=for-the-badge" /></a>
-</p>
-<br />
+### Linux/macOS (One-liner)
+```bash
+curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/freeshow-churchtools/main/quick-install.sh | bash
+```
 
-## Get Started Using FreeShow
+### Windows (PowerShell)
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force
+iwr https://raw.githubusercontent.com/YOUR_USERNAME/freeshow-churchtools/main/quick-install.ps1 -UseBasicParsing | iex
+```
 
-[![](https://markdown-videos.vercel.app/youtube/9_1lUNcrU1w)](https://youtu.be/9_1lUNcrU1w)
+### Patch Existing Installation
+```bash
+# Linux/macOS
+./patch-freeshow.sh --path /opt/FreeShow --force
 
-## Preview
+# Windows (Admin PowerShell)
+.\patch-freeshow.ps1 -FreeShowPath "C:\Program Files\FreeShow" -Force
+```
 
-<div style="display: flex;gap: 10px;">
-    <img style="width: 49%;" src="https://github.com/ChurchApps/FreeShow/assets/1447203/0e5e832d-9bb8-4c64-98cc-04f0ce3f966e">
-    <img style="width: 49%;" src="https://github.com/ChurchApps/FreeShow/assets/1447203/c1d71b2f-d873-4125-9f04-339e234e55f9">
-</div>
-<div style="display: flex;gap: 10px;margin-top: 10px;">
-    <img style="width: 49%;" src="https://github.com/ChurchApps/FreeShow/assets/1447203/39c344fd-5c22-4019-9cae-c6307364d580">
-    <img style="width: 49%;" src="https://github.com/ChurchApps/FreeShow/assets/1447203/b1275bfc-e966-4813-962e-a7350ba6a84a">
-</div>
+## 🔧 Manual Install
 
-## Short description
+### Download AppImage (Linux)
+```bash
+wget https://github.com/YOUR_USERNAME/freeshow-churchtools/releases/latest/download/FreeShow-1.6.8-beta.4-x86_64.AppImage
+chmod +x FreeShow-*.AppImage
+./FreeShow-*.AppImage
+```
 
-FreeShow is a free and open-source presentation program that makes it easy to show text on a big screen. It supports stage display, remote control, media, and many other advanced features. It is open-sourced meaning anyone can contribute.
+### Build from Source
+```bash
+git clone https://github.com/YOUR_USERNAME/freeshow-churchtools.git
+cd freeshow-churchtools
+npm ci
+npm run release:local
+# AppImage in dist/
+```
 
-FreeShow exists because the creator found that other similar programs were either expensive or complex to use. He wanted to create a program that is easy to use and affordable for everyone, from small churches to large venues. FreeShow is now used by people all over the world.
+## ⬆️ Update / Updater
 
-## Support Us
+### Auto-Updater (Preserves Settings)
+```bash
+npx freeshow-updater
+# or
+node freeshow-updater.js
+```
 
-The only reason this program is free is because of the generous support from users. If you want to support us to keep this free, please head over to [ChurchApps](https://churchapps.org/partner) or [sponsor us on GitHub](https://github.com/sponsors/ChurchApps/). Thank you so much!
+Options:
+```bash
+npx freeshow-updater --dry-run          # Check only, no changes
+npx freeshow-updater --backup-only      # Backup settings only
+npx freeshow-updater --force            # Force reinstall
+npx freeshow-updater --rollback         # Rollback to backup
+npx freeshow-updater --repo user/repo   # Custom repo
+npx freeshow-updater --path /path       # Custom FreeShow path
+```
 
-## Join the Community
+### Update via GitHub Release
+```bash
+# Linux: Replace AppImage
+wget https://github.com/USER/freeshow-churchtools/releases/latest/download/FreeShow-*.AppImage -O ~/.local/bin/freeshow
+chmod +x ~/.local/bin/freeshow
+```
 
-We have a great community for end-users on [Facebook](https://www.facebook.com/groups/freeshowapp). It's a good way to ask questions, get tips and follow new updates. Come join us!
+## 🎯 Features
 
-## Report an issue or request a feature
+### Authentication
+- **OAuth 2.0 + PKCE** - Secure authentication flow
+- **Token auto-refresh** - Handles expired tokens automatically
+- **Connection test** - Verify credentials before import
 
-If you notice a bug, or need a feature. Please create an [issue on GitHub](https://github.com/ChurchApps/freeshow/issues).
+### Event Import
+- **Event selection** - Choose from upcoming ChurchTools events
+- **Import preview** - Review agenda, songs, verses, team, attachments before import
+- **Smart selection** - Toggle individual items to import
 
-## Give feedback
+### Smart Song Matching
+| Match Type | Confidence | Criteria |
+|------------|------------|----------|
+| CCLI | 100% | Exact CCLI number match |
+| Title + Artist | 95% | Exact title AND artist match |
+| Title Only | 85% | Exact title match (no artist) |
+| No Match | 0% | Creates new song option |
 
-Feedback is welcome! Please [open a discussion here](https://github.com/orgs/ChurchApps/discussions/categories/freeshow) or send a mail to [dev@freeshow.app](mailto:dev@freeshow.app).
+### Content Processing
+- **Agenda** → Structured slides (headers, text, songs)
+- **Bible Verses** → Auto-detected, create verse slides
+- **Service Team** → Individual slides with photos
+- **Attachments** → Auto-download & convert:
+  - **PPTX** → PDF → Slides
+  - **PDF** → Slides (per page)
+  - **Images** → Individual slides
+  - **SongBeamer (.sng)** → Parsed sections (verse, chorus, bridge)
 
-## Help translate
+### Customization (Settings → ChurchTools → Anhang-Optionen)
+| Option | Default | Description |
+|--------|---------|-------------|
+| Anhänge importieren | ✅ | Enable/disable attachment import |
+| PPTX zu Folien konvertieren | ✅ | Convert PowerPoint to slides |
+| PDF zu Folien konvertieren | ✅ | Convert PDF to slides |
+| Bilder als Folien importieren | ✅ | Import images as slides |
+| Max. Anhang-Größe (MB) | 50 | Size limit for attachments |
 
-Head over to [FreeShow on Transifex](https://app.transifex.com/nettbiter/freeshow/) to request a language.
+## 🔐 ChurchTools Setup
 
-## Help the development
+1. **ChurchTools Admin** → System Settings → API → OAuth Clients
+2. Create new client:
+   - Name: `FreeShow`
+   - Redirect URI: `http://localhost:5503/auth/complete`
+   - Scopes: `calendar`, `services`, `songs`, `events`, `persons`, `files`
+3. Copy **Client ID** and **Client Secret**
+4. In FreeShow: Settings → ChurchTools → Enter credentials → Test Connection → Connect
 
-You are welcome to contribute to the code!
+## 📦 Cross-Platform Support
 
-1. Clone the code in this repo
-2. Install [Node.js](https://nodejs.org/en/download/)
-3. Install [Python 3.12](https://www.python.org/downloads/), and the [`setuptools`](https://pypi.org/project/setuptools/) package
-4. On Windows, download [Visual Studio](https://visualstudio.microsoft.com/downloads/) and install "Desktop development with C++", also select the "Windows 10 SDK"
-5. On Linux, install the following library: `sudo apt-get install libfontconfig1-dev`
-6. In the terminal, run: `npm install`
-7. To start the app, run: `npm start`
+| Platform | Install | Patch | Auto-Update |
+|----------|---------|-------|-------------|
+| Linux (AppImage) | ✅ | ✅ | ✅ |
+| macOS (DMG) | ✅ | ✅ | ⚠️ Manual |
+| Windows (EXE) | ✅ | ✅ | ⚠️ Manual |
 
-## Join us on Slack
+### Patch Existing Installation
+```bash
+# Linux/macOS
+./patch-freeshow.sh [--path /path/to/freeshow] [--force]
 
-If you would like to get involved contributing in any way, head over to our [Slack Channel](https://join.slack.com/t/livechurchsolutions/shared_invite/zt-i88etpo5-ZZhYsQwQLVclW12DKtVflg) and introduce yourself. We'd love to hear from you.
+# Windows (Admin PowerShell)
+.\patch-freeshow.ps1 -FreeShowPath "C:\Program Files\FreeShow" -Force
+```
+
+## 🔄 Auto-Updater (freeshow-updater.js)
+
+```bash
+# Check for updates
+npx freeshow-updater --dry-run
+
+# Update with settings backup
+npx freeshow-updater
+
+# Force update
+npx freeshow-updater --force
+
+# Rollback on failure
+npx freeshow-updater --rollback
+```
+
+### Auto-Updater Features
+- ✅ Settings backup before update
+- ✅ AppImage/ASAR backup before patch
+- ✅ Version check against GitHub releases
+- ✅ Rollback on failure
+- ✅ Dry-run mode
+- ✅ Cross-platform (Linux/macOS/Windows)
+
+## 🏗️ Development
+
+```bash
+# Install deps
+npm ci
+
+# Dev mode
+npm start
+
+# Build production
+npm run build
+
+# Build AppImage
+npm run release:local
+
+# Run tests
+npm run test:unit
+npm run test:playwright
+```
+
+## 📁 Project Structure
+
+```
+src/
+├── electron/contentProviders/churchtools/   # Core integration
+│   ├── ChurchToolsOAuth.ts      # OAuth 2.0 + PKCE
+│   ├── ChurchToolsAuth.ts       # Token management
+│   ├── ChurchToolsImport.ts     # API data fetching
+│   ├── ChurchToolsExport.ts     # Song export to CT
+│   ├── ChurchToolsProvider.ts   # Main provider class
+│   ├── SongArrangementHandler.ts # SongBeamer parsing
+│   └── types.ts                 # TypeScript types
+├── frontend/converters/churchtools.ts    # Import conversion logic
+├── frontend/components/main/popups/
+│   └── ChurchToolsImportPreview.svelte   # Import preview UI
+└── frontend/components/settings/tabs/
+    └── ChurchTools.svelte                # Settings UI
+```
+
+## 🐛 Troubleshooting
+
+### "FreeShow not found"
+```bash
+./patch-freeshow.sh --path /custom/path/to/freeshow
+```
+
+### GPU/Capture Errors
+```bash
+./FreeShow.AppImage --no-sandbox --disable-gpu-compositing --use-gl=angle
+```
+
+### "asar not found"
+```bash
+npm install -g @electron/asar
+```
+
+### OAuth Fails
+- Verify Client ID/Secret in ChurchTools
+- Check redirect URI: `http://localhost:5503/auth/complete`
+- Ensure scopes: `calendar services songs events persons files`
+
+## 📄 License
+
+GPL-3.0 - Same as FreeShow
+
+## 🤝 Contributing
+
+1. Fork the repo
+2. Create feature branch
+3. Submit PR
+
+---
+
+**Built with ❤️ for the FreeShow community**

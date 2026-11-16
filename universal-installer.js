@@ -12,7 +12,7 @@ const os = require('os');
 const https = require('https');
 
 const CONFIG = {
-    githubRepo: 'YOUR_USERNAME/freeshow-churchtools',
+    githubRepo: 'Felixstro-dev/FreeshowChurchToolsDownloader',
     appImageName: 'FreeShow-1.6.8-beta.4-x86_64.AppImage',
     version: '1.6.8-churchtools.1'
 };
@@ -111,7 +111,7 @@ async function main() {
     const options = {
         force: args.includes('--force'),
         path: args.find(a => a.startsWith('--path='))?.split('=')[1],
-        repo: args.find(a => a.startsWith('--repo='))?.split('=')[1] || 'YOUR_USERNAME/freeshow-churchtools',
+        repo: args.find(a => a.startsWith('--repo='))?.split('=')[1] || 'Felixstro-dev/FreeshowChurchToolsDownloader',
         mode: args.includes('--patch') ? 'patch' : 'install'
     };
 
