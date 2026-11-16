@@ -6,22 +6,44 @@ No separate fork, no separate releases - just a patcher script that works on ANY
 
 ## 🚀 Quick Start
 
-### Linux/macOS (One-liner)
+### One-Liner Install (Recommended)
+
+**Linux/macOS:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/freeshow-churchtools-patcher.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/quick-patch.sh | bash
 ```
 
-### Windows (PowerShell)
+**Windows (PowerShell):**
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force
-iwr https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/freeshow-churchtools-patcher.ps1 -UseBasicParsing | iex
+iwr https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/quick-patch.ps1 -UseBasicParsing | iex
 ```
 
-### Using npx (Cross-platform)
+### With Options
+```bash
+# Linux/macOS
+./quick-patch.sh --path /opt/FreeShow --force
+
+# Windows
+.\quick-patch.ps1 -FreeShowPath "C:\Program Files\FreeShow" -Force
+```
+
+### Full Installer (with fallback)
+```bash
+# Linux/macOS
+curl -fsSL https://raw.githubusercontent.com/Felixstro-dev/FreeshowChurchToolsDownloader/main/install-freeshow.sh | bash
+
+# Or download and run
+chmod +x install-freeshow.sh
+./install-freeshow.sh
+```
+
+### Cross-platform (Node.js)
 ```bash
 npx freeshow-churchtools-patcher
-# or with options
+# Options:
 npx freeshow-churchtools-patcher --path /opt/FreeShow --force
+npx freeshow-churchtools-patcher --dry-run
 ```
 
 ## 🔧 What It Does
@@ -91,14 +113,96 @@ npx freeshow-churchtools-patcher --dry-run
 4. **Test Connection** → **Connect** (opens OAuth in browser)
 5. **Import → ChurchTools** → Select service → **Preview** → **Import**
 
-## ⚙️ Customization
+## ⚙️ Customization Options
 
-After patching, configure in **Settings → ChurchTools → Anhang-Optionen**:
-- **Anhänge importieren** - Enable/disable attachment import
-- **PPTX zu Folien konvertieren** - Convert PowerPoint to slides
-- **PDF zu Folien konvertieren** - Convert PDF to slides
-- **Bilder als Folien importieren** - Import images as slides
-- **Max. Anhang-Größe (MB)** - Size limit (default: 50)
+### Via Settings UI (After Patching)
+Configure in **Settings → ChurchTools → Anhang-Optionen**:
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| **Anhänge importieren** | ✅ On | Enable/disable attachment import |
+| **PPTX zu Folien konvertieren** | ✅ On | Convert PowerPoint to slides |
+| **PDF zu Folien konvertieren** | ✅ On | Convert PDF to slides |
+| **Bilder als Folien importieren** | ✅ On | Import images as slides |
+| **Max. Anhang-Größe (MB)** | 50 | Size limit for attachments |
+
+### Via Config File (Advanced)
+Create `churchtools-config.json` in FreeShow's config directory:
+
+```json
+{
+  "attachmentOptions": {
+    "importAttachments": true,
+    "convertPptxToSlides": true,
+    "convertPdfToSlides": true,
+    "importImagesAsSlides": true,
+    "maxAttachmentSizeMB": 100,
+    "allowedAttachmentTypes": ["pptx", "ppt", "pdf", "jpg", "jpeg", "png", "gif", "webp", "mp4", "mov"],
+    "autoDownloadAttachments": true,
+    "convertPptxToPdf": true,
+    "pdfQuality": "high"
+  },
+  "importOptions": {
+    "downloadFiles": true,
+    "downloadSongs": true,
+    "uploadSongSheets": false,
+    "createServiceSlides": true,
+    "createAppointmentSlides": false,
+    "assignBackgrounds": true,
+    "songMatching": {
+      "threshold": 85,
+      "preferCCLI": true,
+      "preferTitleArtist": true
+    },
+    "bibleVerseDetection": {
+      "enabled": true,
+      "createSlides": true,
+      "slideTemplate": "default"
+    },
+    "serviceTeam": {
+      "createSlides": true,
+      "includePhotos": true,
+      "photoSize": "medium",
+      "groupByService": true
+    }
+  },
+  "oauth": {
+    "autoRefreshToken": true,
+    "tokenRefreshBufferMinutes": 5
+  }
+}
+```
+
+### Via Patcher Command Line Options
+```bash
+# Linux/macOS
+./freeshow-churchtools-patcher.sh [options]
+
+# Windows
+.\freeshow-churchtools-patcher.ps1 [options]
+
+# Node.js
+npx freeshow-churchtools-patcher [options]
+```
+
+**Options:**
+| Option | Description |
+|--------|-------------|
+| `--path <path>` | Custom FreeShow installation path |
+| `--force` | Force overwrite existing backup |
+| `--dry-run` | Preview changes without applying |
+| `--config <file>` | Use custom config file |
+| `--no-backup` | Skip backup (not recommended) |
+| `--verbose` | Verbose output |
+
+### Environment Variables
+```bash
+export FREESHOW_CHURCHTOOLS_BASE_URL="https://your-church.churchtools.de"
+export FREESHOW_CHURCHTOOLS_CLIENT_ID="your-client-id"
+export FREESHOW_CHURCHTOOLS_CLIENT_SECRET="your-client-secret"
+export FREESHOW_CHURCHTOOLS_AUTO_IMPORT="true"
+export FREESHOW_CHURCHTOOLS_MAX_ATTACHMENT_SIZE="100"
+```
 
 ## 🔄 Uninstall / Restore
 
