@@ -20,10 +20,11 @@ import { CaptureHelper } from "../capture/CaptureHelper"
 import { canSync, getSyncTeams, hasTeamData, markAsNewSync, restoreCloudBackup, syncData } from "../cloud/syncManager"
 import { ChurchAppsChat } from "../contentProviders/churchApps/ChurchAppsChat"
 import { ContentProviderRegistry } from "../contentProviders/ContentProviderRegistry"
+import { ChurchToolsProvider } from "../contentProviders/churchtools/ChurchToolsProvider"
 import { deleteBackup, getBackups, restoreFiles } from "../data/backup"
 import { getLocalIPs } from "../data/bonjour"
 import { checkIfMediaDownloaded, downloadLessonsMedia, downloadMedia } from "../data/downloadMedia"
-import { importShow } from "../data/import"
+import { importShow, createFreeShowProjectFromChurchTools } from "../data/import"
 import { save } from "../data/save"
 import { _store, appDataPath, config, createStores, getStore, getStoreValue, setStoreValue } from "../data/store"
 import { captureSlide, doesMediaExist, getThumbnail, getThumbnailFolderPath, pdfToImage, saveImage } from "../data/thumbnails"
@@ -288,7 +289,160 @@ export const mainResponses: MainResponses = {
     [Main.AI_GET_STATUS]: (data) => aiGetModelStatus(data),
     [Main.AI_SETUP]: (data) => aiHandleLocalSetup(data),
     [Main.AI_SET_KEY]: (data) => setAiKey(data),
-    [Main.AI_LLM_COMPLETE]: (data) => completeLLM(data)
+    [Main.AI_LLM_COMPLETE]: (data) => completeLLM(data),
+    // ChurchTools
+    [Main.CHURCHTOOLS_TEST_CONNECTION]: async (data) => {
+        try {
+            const provider = ContentProviderRegistry.getProvider<ChurchToolsProvider>("churchtools")
+            if (!provider) {
+                return { success: false, message: "ChurchTools provider not found" }
+            }
+            await provider.initialize({ baseUrl: data.baseUrl, clientId: data.clientId, clientSecret: data.clientSecret })
+            const connected = await provider.connect("events")
+            if (connected) {
+                await provider.disconnect("events")
+                return { success: true, message: "Connection successful!" }
+            }
+            return { success: false, message: "Failed to connect. Check your Base URL, Client ID, and Client Secret." }
+        } catch (error: any) {
+            return { success: false, message: error?.message || "Unknown error" }
+        }
+    },
+    [Main.CHURCHTOOLS_GET_EVENTS]: async (data) => {
+        try {
+            const provider = ContentProviderRegistry.getProvider<ChurchToolsProvider>("churchtools")
+            if (!provider) {
+                return { events: [] }
+            }
+            await provider.initialize({ baseUrl: data.baseUrl, clientId: data.clientId, clientSecret: data.clientSecret })
+            const connected = await provider.connect("events")
+            if (!connected) {
+                return { events: [] }
+            }
+            
+            const fromDate = data.fromDate ? new Date(data.fromDate) : new Date()
+            const toDate = data.toDate ? new Date(data.toDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+            
+            const events = await provider.getEvents(fromDate, toDate)
+            await provider.disconnect("events")
+            
+            return { events }
+        } catch (error: any) {
+            console.error("CHURCHTOOLS_GET_EVENTS error:", error)
+            return { events: [] }
+        }
+    },
+    [Main.CHURCHTOOLS_PROCESS_IMPORT]: async (data) => {
+        try {
+            const provider = ContentProviderRegistry.getProvider<ChurchToolsProvider>("churchtools")
+            if (!provider) {
+                return { success: false, message: "ChurchTools provider not found" }
+            }
+            
+            await provider.initialize({ 
+                baseUrl: data.selectedEvent.baseUrl || data.selectedEvent.baseUrl, 
+                clientId: data.selectedEvent.clientId || data.selectedEvent.clientId, 
+                clientSecret: data.selectedEvent.clientSecret || data.selectedEvent.clientSecret 
+            })
+            const connected = await provider.connect("events")
+            if (!connected) {
+                return { success: false, message: "Failed to connect to ChurchTools" }
+            }
+            
+            // Get full event data
+            const fullEvent = await provider.getFullEvent(data.selectedEvent)
+            await provider.getEventAgenda(data.selectedEvent)
+            await provider.getSongs(data.selectedEvent)
+            await provider.getServices()
+            await provider.getServiceLeads(fullEvent)
+            // const eventFiles = fullEvent.eventFiles
+            
+            // Send to frontend for processing (the frontend converter will handle the actual project creation)
+            // We'll trigger the frontend import via IPC
+            sendToMain(ToMain.ALERT, "popup.importing")
+            
+            await provider.disconnect("events")
+            
+            // The actual project creation happens in the frontend converter
+            // We just return success here - the frontend will call convertChurchTools
+            return { success: true, message: "Import prepared" }
+        } catch (error: any) {
+            console.error("CHURCHTOOLS_PROCESS_IMPORT error:", error)
+            return { success: false, message: error?.message || "Unknown error" }
+        }
+    },
+    [Main.CHURCHTOOLS_IMPORT_EVENT]: async (data) => {
+        try {
+            const provider = ContentProviderRegistry.getProvider<ChurchToolsProvider>("churchtools")
+            if (!provider) {
+                return { success: false, message: "ChurchTools provider not found" }
+            }
+            
+            let connected = false
+            if (data.config) {
+                await provider.initialize(data.config)
+                connected = await provider.connect("events") !== null
+            } else {
+                // Use existing connection
+                connected = await provider.connect("events") !== null
+            }
+            
+            if (!connected) {
+                return { success: false, message: "Failed to connect to ChurchTools" }
+            }
+            
+            // Get full event details
+            const event = { id: data.eventId } as any
+            const fullEvent = await provider.getFullEvent(event)
+            const agenda = await provider.getEventAgenda(event)
+            const songs = await provider.getSongs(event)
+            const services = await provider.getServices()
+            const serviceLeads = await provider.getServiceLeads(fullEvent)
+            const eventFiles = fullEvent.eventFiles
+
+            // Download and convert event files using the import module
+            const importModule = (provider as any).importModule
+            const convertedFiles = await importModule.downloadAndConvertEventFiles(eventFiles, { 
+                convertPptxToPdf: true 
+            })
+
+            if (!data.config) {
+                await provider.disconnect("events")
+            }
+
+            // Get attachment options from config
+            const attachmentOptions = data.config?.attachmentOptions || {}
+            const importAttachments = attachmentOptions.importAttachments !== false
+            const convertPptxToSlides = attachmentOptions.convertPptxToSlides !== false
+            const convertPdfToSlides = attachmentOptions.convertPdfToSlides !== false
+            const importImagesAsSlides = attachmentOptions.importImagesAsSlides !== false
+
+            // Create FreeShow project from ChurchTools data
+            const projectData = await createFreeShowProjectFromChurchTools({
+                event: fullEvent,
+                agenda,
+                songs,
+                services,
+                serviceLeads,
+                eventFiles,
+                convertedFiles,
+                attachmentOptions: {
+                    importAttachments,
+                    convertPptxToSlides,
+                    convertPdfToSlides,
+                    importImagesAsSlides
+                }
+            })
+
+            // Send to main process for import
+            sendToMain(ToMain.IMPORT2, { channel: "churchtools", data: projectData })
+            
+            return { success: true, message: "Import started" }
+        } catch (error: any) {
+            console.error("CHURCHTOOLS_IMPORT_EVENT error:", error)
+            return { success: false, message: error?.message || "Unknown error" }
+        }
+    }
 }
 
 /// ///////

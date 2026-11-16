@@ -17,6 +17,7 @@ export { ContentProviderError, ContentProviderErrorType, type ContentProviderSon
 
 // Provider implementations (simplified versions for now)
 export { ChurchAppsProvider } from "./churchApps/ChurchAppsProvider"
+export { ChurchToolsProvider } from "./churchtools/ChurchToolsProvider"
 export { PlanningCenterProvider } from "./planningCenter/PlanningCenterProvider"
 export { OnStageProvider } from "./onStage/OnStageProvider"
 export { CanvaProvider } from "./canva/CanvaProvider"

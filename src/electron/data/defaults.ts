@@ -83,6 +83,20 @@ export const defaultSettings: { [key in SaveListSettings]: any } = {
         },
         churchApps: {
             syncCategories: ["song"]
+        },
+        churchtools: {
+            baseUrl: "",
+            loginToken: "",
+            replacements: {},
+            autoImport: false,
+            importOptions: {
+                downloadFiles: true,
+                downloadSongs: true,
+                uploadSongSheets: true,
+                createServiceSlides: true,
+                createAppointmentSlides: true,
+                assignBackgrounds: true
+            }
         }
     },
     obsData: {},

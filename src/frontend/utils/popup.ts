@@ -69,6 +69,7 @@ import NowPlaying from "../components/main/popups/NowPlaying.svelte"
 import OutputSelector from "../components/main/popups/OutputSelector.svelte"
 import OutputSetup from "../components/main/popups/OutputSetup.svelte"
 import PcoServicePicker from "../components/main/popups/PcoServicePicker.svelte"
+import ChurchToolsImportPreview from "../components/main/popups/ChurchToolsImportPreview.svelte"
 import RegexManager from "../components/main/popups/RegexManager.svelte"
 import Rename from "../components/main/popups/Rename.svelte"
 import ResetAll from "../components/main/popups/ResetAll.svelte"
@@ -183,6 +184,7 @@ export const popups: { [key in Popups]: ComponentType } = {
     cleaning_utility: CleaningUtility,
     pco_picker: PcoServicePicker,
     sync_folders: SyncFolders,
+    churchtools_import_preview: ChurchToolsImportPreview,
     node_options: NodeOptions,
     ai_model_manager: AiModelManager,
     ai_chat: AiChat

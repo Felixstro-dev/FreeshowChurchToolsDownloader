@@ -42,6 +42,7 @@ import { convertSongbeamerFiles } from "../converters/songbeamer"
 import { convertTexts } from "../converters/txt"
 import { convertVerseVIEW } from "../converters/verseview"
 import { convertVideopsalm } from "../converters/videopsalm"
+import { convertChurchTools } from "../converters/churchtools"
 import {
     activeEdit,
     activePage,
@@ -169,6 +170,11 @@ export const mainResponses: MainResponses = {
             currentOutputSettings.set(outputIds[0])
             popupData.set({ activateOutput: true })
             activePopup.set("choose_screen")
+            return
+        }
+
+        if (a === "churchtools.open_event_selection") {
+            activePopup.set("churchtools_import_preview")
             return
         }
 
@@ -634,7 +640,9 @@ export const mainResponses: MainResponses = {
             // Other
             calendar: () => convertCalendar(data),
             // Bibles
-            BIBLE: () => importBibles(data)
+            BIBLE: () => importBibles(data),
+            // ChurchTools
+            churchtools: () => convertChurchTools(data)
         }
 
         if (!receiveIMPORT[a.channel]) return

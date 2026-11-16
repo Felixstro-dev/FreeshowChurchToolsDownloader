@@ -1497,7 +1497,19 @@
         "auto": "Auto",
         "section_trigger_action": "Trigger action when navigating presentation to a section",
         "rss": "RSS",
-        "txt": "TXT"
+        "txt": "TXT",
+        "churchtools": "ChurchTools",
+        "churchtools_info": "ChurchTools is a church management software. Enter your ChurchTools base URL and login token to connect.",
+        "churchtools_advanced": "Advanced",
+        "churchtools_import_options": "Import Options",
+        "test_connection": "Test Connection",
+        "auto_import": "Auto import agenda on startup",
+        "import_files": "Import event files",
+        "import_songs": "Import songs",
+        "import_song_sheets": "Upload song sheets to event",
+        "create_service_slides": "Create service team slides",
+        "create_appointment_slides": "Create appointment slides",
+        "assign_backgrounds": "Assign backgrounds to songs"
     },
     "gpu": {
         "no_acceleration": "Graphics acceleration is unavailable",

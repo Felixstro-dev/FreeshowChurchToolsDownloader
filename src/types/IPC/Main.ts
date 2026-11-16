@@ -192,7 +192,12 @@ export enum Main {
     AI_GET_STATUS = "AI_GET_STATUS",
     AI_SETUP = "AI_SETUP",
     AI_SET_KEY = "AI_SET_KEY",
-    AI_LLM_COMPLETE = "AI_LLM_COMPLETE"
+    AI_LLM_COMPLETE = "AI_LLM_COMPLETE",
+    // ChurchTools
+    CHURCHTOOLS_TEST_CONNECTION = "CHURCHTOOLS_TEST_CONNECTION",
+    CHURCHTOOLS_GET_EVENTS = "CHURCHTOOLS_GET_EVENTS",
+    CHURCHTOOLS_PROCESS_IMPORT = "CHURCHTOOLS_PROCESS_IMPORT",
+    CHURCHTOOLS_IMPORT_EVENT = "CHURCHTOOLS_IMPORT_EVENT"
 }
 
 export interface MainSendPayloads {
@@ -306,6 +311,11 @@ export interface MainSendPayloads {
     [Main.AI_SETUP]: AiSetupOptions
     [Main.AI_SET_KEY]: { providerId: AIProviderId; key: string }
     [Main.AI_LLM_COMPLETE]: { providerId: AIProviderId; model: string; options: { systemPrompt?: string; prompt: string; jsonSchema?: any; temperature?: number; maxTokens?: number } }
+    // ChurchTools
+    [Main.CHURCHTOOLS_TEST_CONNECTION]: { baseUrl: string; clientId: string; clientSecret: string },
+    [Main.CHURCHTOOLS_GET_EVENTS]: { baseUrl: string; clientId: string; clientSecret: string; fromDate?: string; toDate?: string },
+    [Main.CHURCHTOOLS_PROCESS_IMPORT]: { previewData: any; importOptions: any; selectedEvent: any },
+    [Main.CHURCHTOOLS_IMPORT_EVENT]: { eventId: number; config?: { baseUrl: string; clientId: string; clientSecret: string; attachmentOptions?: { importAttachments?: boolean; convertPptxToSlides?: boolean; convertPdfToSlides?: boolean; importImagesAsSlides?: boolean; maxAttachmentSizeMB?: number; allowedAttachmentTypes?: string[] } } }
 }
 
 export interface MainReturnPayloads {
@@ -418,6 +428,11 @@ export interface MainReturnPayloads {
     [Main.AI_SETUP]: Promise<boolean>
     [Main.AI_SET_KEY]: Promise<boolean>
     [Main.AI_LLM_COMPLETE]: Promise<{ text: string; error?: string; code?: string; retryAfter?: number }>
+    // ChurchTools
+    [Main.CHURCHTOOLS_TEST_CONNECTION]: Promise<{ success: boolean; message: string }>,
+    [Main.CHURCHTOOLS_GET_EVENTS]: Promise<{ events: any[] }>,
+    [Main.CHURCHTOOLS_PROCESS_IMPORT]: Promise<{ success: boolean; message: string }>,
+    [Main.CHURCHTOOLS_IMPORT_EVENT]: Promise<{ success: boolean; message: string }>
 }
 
 ///////////

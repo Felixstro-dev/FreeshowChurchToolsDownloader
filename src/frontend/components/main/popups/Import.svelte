@@ -52,7 +52,8 @@
         { name: "SoftProjector", extensions: ["sps"], id: "softprojector" },
         { name: "Songbeamer", extensions: ["sng"], id: "songbeamer" },
         { name: "Easyslides", extensions: ["xml"], id: "easyslides" },
-        { name: "VerseVIEW", extensions: ["xml"], id: "verseview" }
+        { name: "VerseVIEW", extensions: ["xml"], id: "verseview" },
+        { name: "ChurchTools", extensions: [], id: "churchtools", tutorial: "Connect to ChurchTools via OAuth 2.0 to import agendas, songs, and media directly from your ChurchTools account." }
     ]
 
     const media_formats = [
@@ -307,6 +308,11 @@
                 variant="outlined"
                 style="justify-content: start;width: calc((100% / 3) - (5px * 2 / 3));min-height: 50px;font-weight: normal;border: 1px solid var(--primary-lighter);"
                 on:click={() => {
+                    if (format.id === "churchtools") {
+                        // Open ChurchTools event selection popup
+                        activePopup.set("churchtools_import_preview")
+                        return
+                    }
                     let name = translateText(format.name)
                     sendMain(Main.IMPORT, { channel: format.id, format: { ...format, name } })
                     displayTutorial(format)

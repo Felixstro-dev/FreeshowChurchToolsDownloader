@@ -487,6 +487,7 @@ export type Popups =
     | "cleaning_utility"
     | "pco_picker"
     | "sync_folders"
+    | "churchtools_import_preview"
     | "node_options"
     | "ai_model_manager"
     | "ai_chat"

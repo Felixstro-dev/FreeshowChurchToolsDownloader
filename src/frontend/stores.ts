@@ -218,6 +218,9 @@ export const statusIndicator: Writable<string> = writable("")
 export type SlideHighlight = { indexes: number[]; color?: string; icon?: string } | null
 export const slideDeleteHighlight: Writable<SlideHighlight> = writable(null)
 
+// ChurchTools Import Preview
+export const importPreviewData: Writable<any> = writable(null)
+
 // AI
 export const aiSttStatus: Writable<{ state: "inactive" | "listening" | "stopped" | "error"; message?: string }> = writable({ state: "inactive" })
 export const aiLlmStatus: Writable<AiFeatureStatus> = writable({ state: "stopped" })

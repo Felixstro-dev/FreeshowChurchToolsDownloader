@@ -13,6 +13,7 @@ import { asyncPool, doesPathExist, getDataFolderPath, getExtension, readFileAsyn
 import { detectFileType } from "./bibleDetecter"
 import { filePathHashCode } from "./thumbnails"
 import { decompressZip, decompressZipStream, isZip } from "./zip"
+import type { ChurchToolsEventFull, ChurchToolsAgenda, ChurchToolsSong, ChurchToolsService, ChurchToolsServiceLead, ChurchToolsEventFile } from "../contentProviders/churchtools/types"
 
 type FileData = { content: Buffer | string | object; path?: string; name?: string; extension?: string }
 
@@ -116,6 +117,10 @@ export async function importShow(id: string, files: string[] | null) {
     }
     if (id === "freeshow_overlay") {
         await importOverlay(files)
+        return
+    }
+    if (id === "churchtools") {
+        await importChurchTools()
         return
     }
 
@@ -261,6 +266,46 @@ async function importOverlay(files: string[]) {
     }
 
     sendToMain(ToMain.IMPORT2, { channel: "freeshow_overlay", data })
+}
+
+/// CHURCHTOOLS ///
+
+async function importChurchTools(): Promise<void> {
+    // Open event selection popup instead of auto-importing
+    sendToMain(ToMain.ALERT, "churchtools.open_event_selection")
+}
+
+export interface ChurchToolsImportData {
+    event: ChurchToolsEventFull
+    agenda: ChurchToolsAgenda
+    songs: ChurchToolsSong[]
+    services: ChurchToolsService[]
+    serviceLeads: ChurchToolsServiceLead[]
+    eventFiles: ChurchToolsEventFile[]
+    convertedFiles?: { originalUrl: string; localPath: string; type: string }[]
+    attachmentOptions?: {
+        importAttachments: boolean
+        convertPptxToSlides: boolean
+        convertPdfToSlides: boolean
+        importImagesAsSlides: boolean
+    }
+}
+
+export async function createFreeShowProjectFromChurchTools(data: ChurchToolsImportData): Promise<any> {
+    // This will create a FreeShow project structure from ChurchTools data
+    // Implementation will be expanded
+    return {
+        type: "churchtools_project",
+        event: data.event,
+        agenda: data.agenda,
+        songs: data.songs,
+        services: data.services,
+        serviceLeads: data.serviceLeads,
+        eventFiles: data.eventFiles,
+        convertedFiles: data.convertedFiles,
+        attachmentOptions: data.attachmentOptions,
+        timestamp: Date.now()
+    }
 }
 
 /// ZIP ///

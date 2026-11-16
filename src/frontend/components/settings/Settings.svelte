@@ -7,6 +7,7 @@
     import Tip from "../main/Tip.svelte"
     import SmartSettings from "../../ai/components/settings/SmartSettings.svelte"
     import AudioRouting from "./tabs/AudioRouting.svelte"
+    import ChurchTools from "./tabs/ChurchTools.svelte"
     import Connection from "./tabs/Connection.svelte"
     import Files from "./tabs/Files.svelte"
     import FilesButtons from "./tabs/FilesButtons.svelte"
@@ -85,6 +86,8 @@
             <AudioRouting />
         {:else if tabId === "connection"}
             <Connection />
+        {:else if tabId === "churchtools"}
+            <ChurchTools />
         {:else if tabId === "files"}
             <Files />
         {:else if tabId === "profiles"}
