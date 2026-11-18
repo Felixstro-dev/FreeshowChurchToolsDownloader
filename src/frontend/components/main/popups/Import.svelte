@@ -2,7 +2,7 @@
     import { Main } from "../../../../types/IPC/Main"
     import { importFromClipboard } from "../../../converters/importHelpers"
     import { sendMain } from "../../../IPC/main"
-    import { activePopup, alertMessage, os, popupData } from "../../../stores"
+    import { activePopup, alertMessage, os, popupData, providerConnections } from "../../../stores"
     import { translateText } from "../../../utils/language"
     import { presentationExtensions } from "../../../values/extensions"
     import Icon from "../../helpers/Icon.svelte"
@@ -53,7 +53,7 @@
         { name: "Songbeamer", extensions: ["sng"], id: "songbeamer" },
         { name: "Easyslides", extensions: ["xml"], id: "easyslides" },
         { name: "VerseVIEW", extensions: ["xml"], id: "verseview" },
-        { name: "ChurchTools", extensions: [], id: "churchtools", tutorial: "Connect to ChurchTools via OAuth 2.0 to import agendas, songs, and media directly from your ChurchTools account." }
+        { name: "ChurchTools", extensions: [], id: "churchtools", logo: "svg", tutorial: "Connect to ChurchTools via OAuth 2.0 to import agendas, songs, and media directly from your ChurchTools account." }
     ]
 
     const media_formats = [
@@ -182,7 +182,7 @@
                         displayTutorial(format)
                     }}
                 >
-                    <img style="height: 60px;width: 70px;" src="./import-logos/{format.id}.webp" alt="{format.id}-logo" draggable={false} />
+                    <img style="height: 60px;width: 70px;" src="./import-logos/{format.id}.{format.logo || 'webp'}" alt="{format.id}-logo" draggable={false} />
                     <p>{format.name}</p>
                 </MaterialButton>
             </InputRow>
@@ -203,7 +203,7 @@
                 }}
                 title={format.shortcut ? ` [${format.shortcut}]` : ""}
             >
-                <img style="height: 60px;width: 70px;" src="./import-logos/{format.id}.webp" alt="{format.id}-logo" draggable={false} />
+                <img style="height: 60px;width: 70px;" src="./import-logos/{format.id}.{format.logo || 'webp'}" alt="{format.id}-logo" draggable={false} />
                 <p>{translateText(format.name)}</p>
             </MaterialButton>
         {/each}
@@ -280,7 +280,7 @@
                         displayTutorial(format)
                     }}
                 >
-                    <img style="height: 60px;width: 70px;" src="./import-logos/{format.id}.webp" alt="{format.id}-logo" draggable={false} />
+                    <img style="height: 60px;width: 70px;" src="./import-logos/{format.id}.{format.logo || 'webp'}" alt="{format.id}-logo" draggable={false} />
                     <p>{format.name}</p>
                 </MaterialButton>
 
@@ -306,8 +306,14 @@
         {#each text_formats as format}
             <MaterialButton
                 variant="outlined"
-                style="justify-content: start;width: calc((100% / 3) - (5px * 2 / 3));min-height: 50px;font-weight: normal;border: 1px solid var(--primary-lighter);"
+                disabled={format.id === "churchtools" && !$providerConnections.churchtools}
+                style="justify-content: start;width: calc((100% / 3) - (5px * 2 / 3));min-height: 50px;font-weight: normal;border: 1px solid var(--primary-lighter);{format.id === 'churchtools' && !$providerConnections.churchtools ? 'opacity: 0.45;filter: grayscale(1);' : ''}"
                 on:click={() => {
+                    if (format.id === "churchtools" && !$providerConnections.churchtools) {
+                        alertMessage.set(translateText("churchtools.connect_first"))
+                        activePopup.set("alert")
+                        return
+                    }
                     if (format.id === "churchtools") {
                         // Open ChurchTools event selection popup
                         activePopup.set("churchtools_import_preview")
@@ -319,7 +325,7 @@
                 }}
                 title={format.shortcut ? ` [${format.shortcut}]` : ""}
             >
-                <img style="height: 60px;width: 70px;" src="./import-logos/{format.id}.webp" alt="{format.id}-logo" draggable={false} />
+                <img style="height: 60px;width: 70px;" src="./import-logos/{format.id}.{format.logo || 'webp'}" alt="{format.id}-logo" draggable={false} />
                 <p>{translateText(format.name)}</p>
             </MaterialButton>
         {/each}

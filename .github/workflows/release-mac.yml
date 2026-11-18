@@ -1,0 +1,106 @@
+name: Release macOS
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release (e.g. v1.6.8-churchtools.1)"
+        required: true
+        type: string
+
+  push:
+    tags:
+      - "v*-churchtools.*"
+
+jobs:
+  build-mac:
+    name: Build macOS (Intel + Apple Silicon)
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./FreeShow
+
+      - name: Build frontend (production)
+        run: npm run build:frontend:prod
+        working-directory: ./FreeShow
+
+      - name: Build Electron app
+        run: npm run release:local
+        working-directory: ./FreeShow
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: freeshow-macos-${{ github.ref_name }}
+          path: |
+            FreeShow/dist/*.dmg
+            FreeShow/dist/*.zip
+            FreeShow/dist/mac/**/*
+          retention-days: 30
+
+  create-release:
+    name: Create GitHub Release
+    needs: build-mac
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: freeshow-macos-${{ github.event.inputs.tag || github.ref_name }}
+          path: ./release-assets
+
+      - name: Rename DMG for clarity
+        run: |
+          cd release-assets
+          for f in *.dmg; do
+            mv "$f" "freeshow-${{ github.event.inputs.tag || github.ref_name }}-mac.dmg"
+          done
+          ls -la
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: FreeShow ${{ github.event.inputs.tag || github.ref_name }} (ChurchTools Fork)
+          body: |
+            **ChurchTools Fork** — includes ChurchTools integration (OAuth, event import, song matching, service slides, attachments)
+            
+            ### macOS
+            - `freeshow-${{ github.event.inputs.tag || github.ref_name }}-mac.dmg` — Universal (Intel + Apple Silicon)
+            
+            ### Installation
+            1. Download the `.dmg`
+            2. Open and drag FreeShow to Applications
+            3. On first launch: Right-click → Open (bypasses Gatekeeper for unsigned builds)
+            
+            ### Settings
+            - Settings stored in `~/Library/Application Support/FreeShow/`
+            - Compatible with official FreeShow installs (same config location)
+            - Uninstalling the app does **not** remove settings
+          draft: false
+          prerelease: true
+          files: |
+            release-assets/*.dmg
+            release-assets/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

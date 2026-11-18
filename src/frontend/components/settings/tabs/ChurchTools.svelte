@@ -178,6 +178,23 @@
 
         <HRule />
 
+        <Title label="settings.churchtools_tutorial" icon="help" />
+
+        <Tip type="info" value={translateText("settings.churchtools_tutorial_text")} />
+
+        <InputRow>
+            <MaterialButton variant="outlined" icon="external-link" on:click={() => sendMain(Main.URL, "https://api.churchtools.de/")}>
+                ChurchTools API Docs
+            </MaterialButton>
+            <MaterialButton variant="outlined" icon="external-link" on:click={() => sendMain(Main.URL, "https://intern.church.tools/?q=churchtools# (Systemeinstellungen → API → OAuth Clients)")}>
+                OAuth Client erstellen
+            </MaterialButton>
+        </InputRow>
+
+        <Tip type="info" value={translateText("settings.churchtools_oauth_hint")} />
+
+        <HRule />
+
         <Title label="settings.churchtools_advanced" icon="settings" />
 
         <InputRow>

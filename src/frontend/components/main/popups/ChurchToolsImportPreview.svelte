@@ -45,7 +45,12 @@
     async function loadEvents() {
         loading = true
         try {
-            const result = await requestMain(Main.CHURCHTOOLS_GET_EVENTS, {})
+            const config = $contentProviderData.churchtools || {}
+            const result = await requestMain(Main.CHURCHTOOLS_GET_EVENTS, {
+                baseUrl: config.baseUrl,
+                clientId: config.clientId,
+                clientSecret: config.clientSecret
+            })
             if (result?.events) {
                 events = result.events
             }
@@ -122,6 +127,15 @@
             if (!d) return d
             d.serviceSlidesSelected = d.serviceSlidesSelected || {}
             d.serviceSlidesSelected[serviceName] = !d.serviceSlidesSelected[serviceName]
+            return d
+        })
+    }
+
+    function toggleFileSelect(fileId: string, checked: boolean) {
+        importPreviewData.update(d => {
+            if (!d) return d
+            d.selectedFiles = d.selectedFiles || {}
+            d.selectedFiles[fileId] = checked
             return d
         })
     }
@@ -408,6 +422,12 @@
                     <Icon id={file.domainType === "file" ? "file" : "link"} size={1.2} />
                     <span class="file-title">{file.title}</span>
                     <span class="file-type">{file.domainType}</span>
+                    {#if file.domainType === "file"}
+                        <MaterialToggleSwitch
+                            checked={previewData.selectedFiles?.[file.id] !== false}
+                            on:change={(e) => toggleFileSelect(file.id, e.detail)}
+                        />
+                    {/if}
                 </div>
             {/each}
         </div>

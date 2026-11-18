@@ -1,20 +1,54 @@
 // Loads "openmediatransport", shared by receiver and send worker.
 
-import path from "path"
-import { isMainThread } from "worker_threads"
+let pathModule: typeof import("path") | null = null
+let workerThreads: { isMainThread: boolean } | null = null
+
+function getPathModule(): typeof import("path") | null {
+    if (pathModule) return pathModule
+    if (typeof process !== "undefined" && process.versions?.node) {
+        try {
+            pathModule = require("path")
+            return pathModule
+        } catch {
+            return null
+        }
+    }
+    return null
+}
+
+function getWorkerThreads(): { isMainThread: boolean } | null {
+    if (workerThreads) return workerThreads
+    if (typeof process !== "undefined" && process.versions?.node) {
+        try {
+            workerThreads = require("worker_threads")
+            return workerThreads
+        } catch {
+            return null
+        }
+    }
+    return null
+}
+
+function getIsMainThread(): boolean {
+    const wt = getWorkerThreads()
+    return wt?.isMainThread ?? true // Assume main thread if not in Node.js
+}
 
 // Ensure OMT VMX codec DLL is in PATH on Windows (main thread only)
 let searchPathReady = false
 export function ensureOmtCodecSearchPath() {
-    if (searchPathReady || process.platform !== "win32" || !isMainThread) return
+    if (searchPathReady || process.platform !== "win32" || !getIsMainThread()) return
     searchPathReady = true
 
+    const pathModule = getPathModule()
+    if (!pathModule) return
+
     try {
-        const moduleDir = path.dirname(require.resolve("openmediatransport/package.json"))
+        const moduleDir = pathModule.dirname(require.resolve("openmediatransport/package.json"))
         // packaged builds keep native modules outside the asar archive
-        const addonDir = path.join(moduleDir.replace(`app.asar${path.sep}`, `app.asar.unpacked${path.sep}`), "build", "Release")
-        if (!(process.env.PATH || "").split(path.delimiter).includes(addonDir)) {
-            process.env.PATH = `${addonDir}${path.delimiter}${process.env.PATH || ""}`
+        const addonDir = pathModule.join(moduleDir.replace(`app.asar${pathModule.sep}`, `app.asar.unpacked${pathModule.sep}`), "build", "Release")
+        if (!(process.env.PATH || "").split(pathModule.delimiter).includes(addonDir)) {
+            process.env.PATH = `${addonDir}${pathModule.delimiter}${process.env.PATH || ""}`
         }
     } catch {
         // not installed — the load below reports it

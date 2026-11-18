@@ -9,7 +9,6 @@ import { activePopup, alertMessage, groups, shows, contentProviderData } from ".
 import { createCategory, setTempShows } from "./importHelpers"
 import { sendMain } from "../IPC/main"
 import { Main } from "../../types/IPC/Main"
-import { getDataFolderPath } from "../../electron/utils/files"
 import type { ChurchToolsEventFull, ChurchToolsAgenda, ChurchToolsSong, ChurchToolsService, ChurchToolsServiceLead, ChurchToolsEventFile } from "../../electron/contentProviders/churchtools/types"
 
 interface ChurchToolsImportData {
@@ -64,6 +63,8 @@ async function showImportPreview(data: ChurchToolsImportData, categoryId: string
         songs: matchedSongs,
         serviceLeads: data.serviceLeads,
         eventFiles: data.eventFiles,
+        convertedFiles: data.convertedFiles,
+        attachmentOptions: data.attachmentOptions,
         bibleVerses
     }
 
@@ -205,7 +206,8 @@ export async function processChurchToolsImport(confirmedData: any) {
         await handleAttachments(confirmedData.convertedFiles, categoryId, tempShows, {
             convertPptxToSlides,
             convertPdfToSlides,
-            importImagesAsSlides
+            importImagesAsSlides,
+            selectedFiles: confirmedData.selectedFiles
         })
     }
     
@@ -214,9 +216,12 @@ export async function processChurchToolsImport(confirmedData: any) {
     alertMessage.set("")
 }
 
-async function handleAttachments(convertedFiles: any[], categoryId: string, tempShows: any[], options: { convertPptxToSlides: boolean; convertPdfToSlides: boolean; importImagesAsSlides: boolean }) {
+async function handleAttachments(convertedFiles: any[], categoryId: string, tempShows: any[], options: { convertPptxToSlides: boolean; convertPdfToSlides: boolean; importImagesAsSlides: boolean; selectedFiles?: Record<string, boolean> }) {
     for (const file of convertedFiles) {
         if (!file.localPath || file.type === "error") continue
+        
+        // Check if file is selected (if selection is provided)
+        if (options.selectedFiles && options.selectedFiles[file.id] === false) continue
         
         try {
             if (file.type === "pdf" && options.convertPdfToSlides) {
@@ -227,6 +232,10 @@ async function handleAttachments(convertedFiles: any[], categoryId: string, temp
                 // PowerPoint files - they were converted to PDF, import the PDF
                 const pdfShow = await importPdfAsSlides(file.localPath, file.originalUrl, categoryId)
                 if (pdfShow) tempShows.push(pdfShow)
+            } else if (file.type === "sng") {
+                // SongBeamer .sng file - parse and import as a song show
+                const sngShow = await importSngFile(file.localPath, file.originalUrl, categoryId)
+                if (sngShow) tempShows.push(sngShow)
             } else if (["jpg", "jpeg", "png", "gif", "webp", "bmp"].includes(file.type) && options.importImagesAsSlides) {
                 // Import image as a slide
                 const imageShow = createImageSlideShow(file.localPath, file.originalUrl, categoryId)
@@ -305,6 +314,39 @@ function createImageSlideShow(imagePath: string, originalUrl: string, categoryId
             name: "Main",
             notes: "",
             slides: [{ id: slideId }]
+        }
+    }
+    show.media = {}
+    show.meta = initializeMetadata({
+        title: show.name,
+        comment: `Imported from ChurchTools attachment: ${originalUrl}`
+    })
+    
+    return { id: uid(), show }
+}
+
+async function importSngFile(sngPath: string, originalUrl: string, categoryId: string) {
+    const fs = await import("fs")
+    const sngContent = fs.readFileSync(sngPath, "utf-8")
+    
+    const layoutId = uid()
+    const show = new ShowObj(false, categoryId, layoutId, Date.now(), false)
+    show.origin = "churchtools"
+    const fileName = originalUrl.split("/").pop() || sngPath.split("/").pop() || "song"
+    show.name = checkName(`Lied: ${fileName.replace(/\.sng$/i, "")}`, uid())
+    
+    const slides: Record<string, Slide> = {}
+    const layoutSlides: SlideData[] = []
+    
+    // Parse SongBeamer format
+    parseSongBeamerContent(sngContent, slides, layoutSlides)
+    
+    show.slides = slides
+    show.layouts = {
+        [layoutId]: {
+            name: "Main",
+            notes: "",
+            slides: layoutSlides
         }
     }
     show.media = {}
