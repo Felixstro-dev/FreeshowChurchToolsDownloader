@@ -10,3 +10,5 @@ mac:
     notarize: false
     entitlements: null
     entitlementsInherit: null
+
+afterSign: null
