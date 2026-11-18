@@ -74,6 +74,8 @@ export enum Main {
     DATA_PATH = "DATA_PATH",
     UPDATE_DATA_PATH = "UPDATE_DATA_PATH",
     LOG_ERROR = "LOG_ERROR",
+    GET_ERROR_LOG = "GET_ERROR_LOG",
+    CLEAR_ERROR_LOG = "CLEAR_ERROR_LOG",
     OPEN_LOG = "OPEN_LOG",
     OPEN_CACHE = "OPEN_CACHE",
     OPEN_APPDATA = "OPEN_APPDATA",
@@ -216,6 +218,8 @@ export interface MainSendPayloads {
     [Main.LANGUAGE]: { lang: string; strings: Dictionary }
     [Main.UPDATE_DATA_PATH]: { newPath: string; oldPath: string }
     [Main.LOG_ERROR]: ErrorLog
+    [Main.GET_ERROR_LOG]: { logs: ErrorLog[] }
+    [Main.CLEAR_ERROR_LOG]: void
     [Main.OPEN_FOLDER_PATH]: string
     [Main.GET_STORE_VALUE]: { file: "config" | keyof typeof _store; key: string }
     [Main.SET_STORE_VALUE]: { file: "config" | keyof typeof _store; key: string; value: any }

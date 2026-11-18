@@ -102,6 +102,19 @@ export const mainResponses: MainResponses = {
         createStores(data.oldPath)
     },
     [Main.LOG_ERROR]: (data) => logError(data),
+    [Main.GET_ERROR_LOG]: () => {
+        const storedLog = getStore("ERROR_LOG")
+        const allLogs: ErrorLog[] = []
+        Object.values(storedLog || {}).forEach((logs: any) => {
+            if (Array.isArray(logs)) allLogs.push(...logs)
+        })
+        // Sort by time, newest first
+        allLogs.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+        return { logs: allLogs.slice(0, 500) }
+    },
+    [Main.CLEAR_ERROR_LOG]: () => {
+        _store.ERROR_LOG?.set({ main: [], renderer: [], request: [] })
+    },
     [Main.OPEN_LOG]: () => openInSystem(_store.ERROR_LOG?.path || ""),
     [Main.OPEN_CACHE]: () => openInSystem(getThumbnailFolderPath(), true),
     [Main.OPEN_APPDATA]: () => openInSystem(appDataPath, true),

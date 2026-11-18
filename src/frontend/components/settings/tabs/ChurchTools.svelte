@@ -2,7 +2,7 @@
     import { onMount } from "svelte"
     import { Main } from "../../../../types/IPC/Main"
     import { requestMain, sendMain } from "../../../IPC/main"
-    import { activePage, activePopup, cloudSyncData, contentProviderData, providerConnections, projectTemplates, saved, special } from "../../../stores"
+    import { activePage, activePopup, alertMessage, cloudSyncData, contentProviderData, providerConnections, projectTemplates, saved, special } from "../../../stores"
     import { translateText } from "../../../utils/language"
     import { contentProviderSync } from "../../../utils/startup"
     import { keysToID, sortByName } from "../../helpers/array"
@@ -23,9 +23,12 @@
     let testResult: { success: boolean; message: string } | null = null
     let placeholderText = JSON.stringify({"Max Mustermann": "Max M.", "Erika Musterfrau": "Erika M."}, null, 2)
     let testing = false
+    let showErrorLog = false
+    let errorLog: any[] = []
 
     onMount(() => {
         loadConfig()
+        loadErrorLog()
     })
 
     async function loadConfig() {
@@ -58,6 +61,28 @@
             return a
         })
         saved.set(false)
+    }
+
+    async function loadErrorLog() {
+        try {
+            const result = await requestMain(Main.GET_ERROR_LOG, {})
+            if (result?.logs) {
+                errorLog = result.logs
+            }
+        } catch (e) {
+            console.error("Failed to load error log:", e)
+        }
+    }
+
+    function copyToClipboard(text: string) {
+        navigator.clipboard.writeText(text)
+        alertMessage.set(translateText("settings.copied_to_clipboard"))
+        activePopup.set("alert")
+    }
+
+    function clearErrorLog() {
+        sendMain(Main.CLEAR_ERROR_LOG, {})
+        errorLog = []
     }
 
     async function testConnection() {
@@ -178,9 +203,33 @@
 
         <HRule />
 
-        <Title label="settings.churchtools_tutorial" icon="help" />
+        <Title label="settings.churchtools_setup_guide" icon="help" />
 
-        <Tip type="info" value={translateText("settings.churchtools_tutorial_text")} />
+        <div class="setup-guide">
+            <h4>{translateText("settings.churchtools_oauth_setup")}</h4>
+            <ol class="setup-steps">
+                <li>
+                    <strong>{translateText("settings.churchtools_step1_title")}</strong>
+                    <p>{translateText("settings.churchtools_step1_desc")}</p>
+                </li>
+                <li>
+                    <strong>{translateText("settings.churchtools_step2_title")}</strong>
+                    <p>{translateText("settings.churchtools_step2_desc")}</p>
+                </li>
+                <li>
+                    <strong>{translateText("settings.churchtools_step3_title")}</strong>
+                    <p>{translateText("settings.churchtools_step3_desc")}</p>
+                </li>
+                <li>
+                    <strong>{translateText("settings.churchtools_step4_title")}</strong>
+                    <p>{translateText("settings.churchtools_step4_desc")}</p>
+                </li>
+                <li>
+                    <strong>{translateText("settings.churchtools_step5_title")}</strong>
+                    <p>{translateText("settings.churchtools_step5_desc")}</p>
+                </li>
+            </ol>
+        </div>
 
         <InputRow>
             <MaterialButton variant="outlined" icon="external-link" on:click={() => sendMain(Main.URL, "https://api.churchtools.de/")}>
@@ -255,6 +304,161 @@
                 on:change={(e) => updateConfig("autoImport", e.detail)}
             />
         </InputRow>
+
+        <HRule />
+
+        <Title label="settings.churchtools_import_options" icon="settings" />
+
+        <InputRow>
+            <MaterialToggleSwitch
+                label="settings.import_files"
+                checked={$contentProviderData.churchtools?.importOptions?.downloadFiles !== false}
+                on:change={(e) => updateConfig("importOptions", { ...($contentProviderData.churchtools?.importOptions || {}), downloadFiles: e.detail })}
+            />
+        </InputRow>
+
+        <InputRow>
+            <MaterialToggleSwitch
+                label="settings.import_songs"
+                checked={$contentProviderData.churchtools?.importOptions?.downloadSongs !== false}
+                on:change={(e) => updateConfig("importOptions", { ...($contentProviderData.churchtools?.importOptions || {}), downloadSongs: e.detail })}
+            />
+        </InputRow>
+
+        <InputRow>
+            <MaterialToggleSwitch
+                label="settings.import_song_sheets"
+                checked={$contentProviderData.churchtools?.importOptions?.uploadSongSheets !== false}
+                on:change={(e) => updateConfig("importOptions", { ...($contentProviderData.churchtools?.importOptions || {}), uploadSongSheets: e.detail })}
+            />
+        </InputRow>
+
+        <InputRow>
+            <MaterialToggleSwitch
+                label="settings.create_service_slides"
+                checked={$contentProviderData.churchtools?.importOptions?.createServiceSlides !== false}
+                on:change={(e) => updateConfig("importOptions", { ...($contentProviderData.churchtools?.importOptions || {}), createServiceSlides: e.detail })}
+            />
+        </InputRow>
+
+        <InputRow>
+            <MaterialToggleSwitch
+                label="settings.create_appointment_slides"
+                checked={$contentProviderData.churchtools?.importOptions?.createAppointmentSlides !== false}
+                on:change={(e) => updateConfig("importOptions", { ...($contentProviderData.churchtools?.importOptions || {}), createAppointmentSlides: e.detail })}
+            />
+        </InputRow>
+
+        <InputRow>
+            <MaterialToggleSwitch
+                label="settings.assign_backgrounds"
+                checked={$contentProviderData.churchtools?.importOptions?.assignBackgrounds !== false}
+                on:change={(e) => updateConfig("importOptions", { ...($contentProviderData.churchtools?.importOptions || {}), assignBackgrounds: e.detail })}
+            />
+        </InputRow>
+
+        <InputRow>
+            <MaterialToggleSwitch
+                label="settings.convert_pptx_to_pdf"
+                checked={$contentProviderData.churchtools?.importOptions?.convertPptxToPdf !== false}
+                on:change={(e) => updateConfig("importOptions", { ...($contentProviderData.churchtools?.importOptions || {}), convertPptxToPdf: e.detail })}
+            />
+        </InputRow>
+
+        <HRule />
+
+        <Title label="settings.churchtools_attachment_options" icon="attachment" />
+
+        <InputRow>
+            <MaterialToggleSwitch
+                label="settings.import_attachments"
+                checked={$contentProviderData.churchtools?.attachmentOptions?.importAttachments !== false}
+                on:change={(e) => updateConfig("attachmentOptions", { ...($contentProviderData.churchtools?.attachmentOptions || {}), importAttachments: e.detail })}
+            />
+        </InputRow>
+
+        <InputRow>
+            <MaterialToggleSwitch
+                label="settings.convert_pptx_to_slides"
+                checked={$contentProviderData.churchtools?.attachmentOptions?.convertPptxToSlides !== false}
+                on:change={(e) => updateConfig("attachmentOptions", { ...($contentProviderData.churchtools?.attachmentOptions || {}), convertPptxToSlides: e.detail })}
+            />
+        </InputRow>
+
+        <InputRow>
+            <MaterialToggleSwitch
+                label="settings.convert_pdf_to_slides"
+                checked={$contentProviderData.churchtools?.attachmentOptions?.convertPdfToSlides !== false}
+                on:change={(e) => updateConfig("attachmentOptions", { ...($contentProviderData.churchtools?.attachmentOptions || {}), convertPdfToSlides: e.detail })}
+            />
+        </InputRow>
+
+        <InputRow>
+            <MaterialToggleSwitch
+                label="settings.import_images_as_slides"
+                checked={$contentProviderData.churchtools?.attachmentOptions?.importImagesAsSlides !== false}
+                on:change={(e) => updateConfig("attachmentOptions", { ...($contentProviderData.churchtools?.attachmentOptions || {}), importImagesAsSlides: e.detail })}
+            />
+        </InputRow>
+
+        <InputRow>
+            <MaterialTextInput
+                label="settings.max_attachment_size_mb"
+                placeholder="50"
+                value={$contentProviderData.churchtools?.attachmentOptions?.maxAttachmentSizeMB || 50}
+                on:change={(e) => updateConfig("attachmentOptions", { ...($contentProviderData.churchtools?.attachmentOptions || {}), maxAttachmentSizeMB: parseInt(e.detail) || 50 })}
+            />
+        </InputRow>
+
+        <HRule />
+
+        <Title label="settings.churchtools_error_log" icon="alert" />
+
+        <InputRow>
+            <MaterialButton variant="outlined" icon={showErrorLog ? "chevron-up" : "chevron-down"} on:click={() => { showErrorLog = !showErrorLog; if (showErrorLog) loadErrorLog() }}>
+                {showErrorLog ? translateText("settings.hide_error_log") : translateText("settings.show_error_log")}
+            </MaterialButton>
+            {#if errorLog.length}
+                <MaterialButton variant="outlined" icon="copy" on:click={() => copyToClipboard(JSON.stringify(errorLog, null, 2))}>
+                    <T id="actions.copy" />
+                </MaterialButton>
+                <MaterialButton variant="outlined" icon="trash" on:click={clearErrorLog} class="danger">
+                    <T id="actions.clear" />
+                </MaterialButton>
+            {/if}
+        </InputRow>
+
+        {#if showErrorLog}
+            <div class="error-log-viewer">
+                {#if errorLog.length === 0}
+                    <p class="no-errors">{translateText("settings.no_errors_logged")}</p>
+                {:else}
+                    <div class="error-log-list">
+                        {#each errorLog as log}
+                            <div class="error-log-entry">
+                                <div class="error-header">
+                                    <span class="error-time">{new Date(log.time).toLocaleString()}</span>
+                                    <span class="error-type">{log.type || "Error"}</span>
+                                    <span class="error-source">{log.source || ""}</span>
+                                </div>
+                                <div class="error-message">{log.message}</div>
+                                {#if log.stack}
+                                    <details class="error-stack">
+                                        <summary>{translateText("settings.show_stack_trace")}</summary>
+                                        <pre>{log.stack}</pre>
+                                    </details>
+                                {/if}
+                                <div class="error-actions">
+                                    <MaterialButton variant="outlined" size="small" icon="copy" on:click={() => copyToClipboard(JSON.stringify(log, null, 2))}>
+                                        <T id="actions.copy" />
+                                    </MaterialButton>
+                                </div>
+                            </div>
+                        {/each}
+                    </div>
+                {/if}
+            </div>
+        {/if}
 
         <HRule />
 
@@ -448,5 +652,130 @@
     @keyframes spin {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
+    }
+
+    /* Setup Guide */
+    .setup-guide {
+        background: var(--primary-lightest);
+        border: 1px solid var(--primary-lighter);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 8px;
+    }
+
+    .setup-guide h4 {
+        margin: 0 0 12px;
+        color: var(--text);
+    }
+
+    .setup-steps {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    .setup-steps li {
+        margin-bottom: 12px;
+        line-height: 1.5;
+    }
+
+    .setup-steps strong {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--text);
+    }
+
+    .setup-steps p {
+        margin: 0;
+        font-size: 0.9em;
+        opacity: 0.8;
+    }
+
+    /* Error Log Viewer */
+    .error-log-viewer {
+        background: var(--primary-lightest);
+        border: 1px solid var(--primary-lighter);
+        border-radius: 8px;
+        padding: 16px;
+        max-height: 400px;
+        overflow: auto;
+    }
+
+    .no-errors {
+        text-align: center;
+        opacity: 0.6;
+        padding: 20px;
+        margin: 0;
+    }
+
+    .error-log-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .error-log-entry {
+        background: var(--primary);
+        border: 1px solid var(--primary-lighter);
+        border-radius: 6px;
+        padding: 12px;
+    }
+
+    .error-header {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 8px;
+        font-size: 0.8em;
+        opacity: 0.7;
+    }
+
+    .error-time {
+        font-family: monospace;
+    }
+
+    .error-type {
+        font-weight: 600;
+        color: var(--error);
+        text-transform: capitalize;
+    }
+
+    .error-source {
+        font-family: monospace;
+        opacity: 0.8;
+    }
+
+    .error-message {
+        margin: 8px 0;
+        font-family: monospace;
+        font-size: 0.85em;
+        word-break: break-word;
+    }
+
+    .error-stack summary {
+        cursor: pointer;
+        font-size: 0.8em;
+        color: var(--primary);
+        margin: 8px 0;
+    }
+
+    .error-stack pre {
+        background: var(--primary-darkest);
+        border-radius: 4px;
+        padding: 8px;
+        font-size: 0.7em;
+        overflow: auto;
+        max-height: 200px;
+        margin: 0;
+    }
+
+    .error-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .danger {
+        color: var(--error) !important;
+        border-color: var(--error) !important;
     }
 </style>
